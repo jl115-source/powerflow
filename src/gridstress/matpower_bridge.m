@@ -32,7 +32,9 @@ for k = 1:length(names)
     else
         result = rundcopf(mpc, opt);
     end
-    assert(result.success, ['MATPOWER failed: ', name]);
+    if ~result.success
+        error('MATPOWER failed: %s', name);
+    end
     rec = struct('success', result.success, 'bus', result.bus, ...
                  'gen', result.gen, 'branch', result.branch, 'options', opt);
     rec.cost = sum(totcost(mpc.gencost, result.gen(:, 2)));

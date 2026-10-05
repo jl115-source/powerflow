@@ -87,7 +87,11 @@ def normalize_matpower(record: dict, dc: bool) -> CanonicalResult:
         keyed(frame, keys)
     objective = record["solver_objective"]
     return CanonicalResult(
-        b, g, lines, float(record["cost"]), None if isinstance(objective, list) else float(objective)
+        b,
+        g,
+        lines,
+        float(record["cost"]),
+        None if isinstance(objective, list) else float(objective),
     )
 
 
@@ -185,8 +189,10 @@ def input_parity(native: dict, tolerance: float) -> tuple[pd.DataFrame, dict[str
                 elif table == "gen" and field == "mbase":
                     note = "Unused generator nameplate base; network equations use system baseMVA"
                 elif table == "gen" and field == "pg" and idx == 1:
-                    note = ("Initial slack PG is solved by PF; "
-                            "OPF ignores initial dispatch (interior start)")
+                    note = (
+                        "Initial slack PG is solved by PF; "
+                        "OPF ignores initial dispatch (interior start)"
+                    )
                 elif table == "branch" and field in ("rate_b", "rate_c"):
                     note = "Emergency ratings unused; RATE_A is the matched operative limit"
                 elif table == "branch" and field == "tap":

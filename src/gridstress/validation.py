@@ -145,8 +145,10 @@ def _validate(config: dict, root: Path, octave: str, output: Path) -> dict:
                     stage="limiting_branches",
                     case=case,
                     status="pass" if sets["pandapower"] == sets["matpower"] else "review_required",
-                    explanation=(f"pandapower={sorted(sets['pandapower'])}; "
-                                 f"MATPOWER={sorted(sets['matpower'])}"),
+                    explanation=(
+                        f"pandapower={sorted(sets['pandapower'])}; "
+                        f"MATPOWER={sorted(sets['matpower'])}"
+                    ),
                 )
             )
             left, right = canonical[case]
@@ -180,8 +182,9 @@ def _validate(config: dict, root: Path, octave: str, output: Path) -> dict:
         "archive_sha256": ARCHIVE_SHA256,
         "formulations": list(RUNS),
         "configuration": config,
-        "independence": ("MATPOWER 8.1 MATLAB/Octave vs pandapower/PYPOWER Python; "
-                         "shared algorithmic ancestry"),
+        "independence": (
+            "MATPOWER 8.1 MATLAB/Octave vs pandapower/PYPOWER Python; shared algorithmic ancestry"
+        ),
         "native_case_sha256": hashlib.sha256(
             json.dumps(native, sort_keys=True).encode()
         ).hexdigest(),
