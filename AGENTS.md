@@ -16,3 +16,10 @@
 - Keep current, fixed-MVA and DC active-flow constraints explicit in results and comparisons.
 - Before publishing solver changes, run both baseline and congestion experiments.
 - Do not commit generated runs, virtual environments, credentials or downloaded third-party datasets.
+
+- Milestone 2b.1 is the independent MATPOWER validation gate. Before stress-sweep
+  research, require its real Octave/MATPOWER run to pass on the relevant revision.
+- Synthetic fixtures and pandapower/PYPOWER self-comparisons are not independent validation.
+- Keep input parity, physical feasibility, solution discrepancies and objective comparison
+  distinct; do not force pointwise AC OPF equality across local solutions.
+- Milestone 3 remains N-1/security analysis.

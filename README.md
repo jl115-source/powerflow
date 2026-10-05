@@ -20,6 +20,13 @@ cost of thermal constraints for these local solutions. Fixed-MVA AC OPF remains 
 MVA limits while reaching **102.85% current loading**. DC OPF reports no active-flow congestion at the same demand; it does not certify AC feasibility.
 See [experiment findings](docs/congestion.md) for the full comparison and limitations.
 
+**Milestone 2b.1 adds an independent MATPOWER validation gate** for AC/DC PF,
+AC-current/MVA OPF and DC OPF. It audits native input parity and produces feasibility,
+absolute/relative discrepancy and limiting-branch comparison tables. An actual Octave
+execution is required; missing runtime or failed acceptance blocks the gate. See
+[validation methods](docs/matpower-validation.md), [measured results](docs/matpower-validation-results.md),
+and [run instructions](experiments/validation/README.md).
+
 ### Run
 
 Python 3.11 is the tested reference environment; package metadata permits 3.11–3.12.
@@ -93,7 +100,7 @@ No reusable modelling code lives in notebooks.
 1. **Baseline (implemented):** verify AC physics, accounting, source limits and repeatability.
 2. **Economic dispatch/congestion (implemented):** DC PF, AC/DC OPF, explicit policies,
    deterministic demand scaling, redispatch, and current-versus-MVA comparison. Next: targeted
-   stress sweeps and independent MATPOWER validation.
+   stress sweeps after the Milestone 2b.1 MATPOWER validation gate.
 3. **Contingencies:** explicit N-1 outages, island handling and severity metrics.
 4. **Probabilistic analysis:** seeded correlated demand/renewables and availability models;
    distributions of congestion, cost and violations, followed by a defined load-shedding model.

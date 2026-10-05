@@ -81,15 +81,26 @@ def compare_results(
                         applicability="unavailable_dc" if unavailable else "available",
                     )
                 )
-    for quantity, a, b in (
+    system_metrics = [
         (
             "p_branch_loss_mw",
             float((candidate.branches.p_from_mw + candidate.branches.p_to_mw).sum()),
             float((reference.branches.p_from_mw + reference.branches.p_to_mw).sum()),
         ),
+        (
+            "q_branch_absorption_mvar",
+            np.nan
+            if dc
+            else float((candidate.branches.q_from_mvar + candidate.branches.q_to_mvar).sum()),
+            np.nan
+            if dc
+            else float((reference.branches.q_from_mvar + reference.branches.q_to_mvar).sum()),
+        ),
         ("cost_per_hour", candidate.cost, reference.cost),
-    ):
-        if not np.isfinite([a, b]).all():
+    ]
+    for quantity, a, b in system_metrics:
+        unavailable = dc and quantity.startswith("q_")
+        if not unavailable and not np.isfinite([a, b]).all():
             raise ValueError("Nonfinite system metric")
         tol = (
             acceptance.objective_absolute
@@ -105,9 +116,11 @@ def compare_results(
                 pandapower=a,
                 matpower=b,
                 absolute_error=abs(a - b),
-                relative_error=abs(a - b) / max(abs(b), acceptance.relative_denominator_floor),
+                relative_error=np.nan
+                if unavailable
+                else (abs(a - b) / max(abs(b), acceptance.relative_denominator_floor)),
                 absolute_tolerance=tol,
-                applicability="available",
+                applicability="unavailable_dc" if unavailable else "available",
             )
         )
     details = pd.DataFrame(rows)
@@ -263,6 +276,15 @@ def audit_feasibility(
     check(
         "thermal_violation_percentage_points",
         float(max(0, max(utilization) - 100)),
+        acceptance.limit_tolerance,
+        opf,
+    )
+    angle_difference = np.rad2deg(angle[f] - angle[t])
+    check(
+        "branch_angle_bound_violation_degree",
+        float(
+            max(0, np.max(line[:, 11] - angle_difference), np.max(angle_difference - line[:, 12]))
+        ),
         acceptance.limit_tolerance,
         opf,
     )

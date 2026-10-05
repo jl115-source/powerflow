@@ -147,3 +147,11 @@ def test_missing_external_runtime_cannot_pass_gate(tmp_path, monkeypatch):
 def test_invalid_validation_tolerance(value):
     with pytest.raises(ValueError):
         Acceptance(voltage_pu=value)
+
+
+def test_reactive_absorption_comparison_is_available_only_for_ac(canonical_ac):
+    _, maxima = compare_results(canonical_ac, canonical_ac, "ac_pf", Acceptance())
+    assert maxima.query("quantity == 'q_branch_absorption_mvar'").iloc[0].status == "pass"
+    dc = normalize_pandapower(extract_results(run_dc_power_flow(load_ieee30())))
+    _, maxima = compare_results(dc, dc, "dc_pf", Acceptance())
+    assert maxima.query("quantity == 'q_branch_absorption_mvar'").iloc[0].status == "not_applicable"
