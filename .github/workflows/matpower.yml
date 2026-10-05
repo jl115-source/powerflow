@@ -1,0 +1,29 @@
+name: MATPOWER validation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  independent-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install GNU Octave
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends octave
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m pip install --no-deps -e .
+      - run: python scripts/fetch_matpower.py --destination .cache/matpower
+      - name: Run independent validation gate
+        run: gridstress-validate-matpower --octave octave-cli --matpower-root .cache/matpower/matpower8.1 --output outputs/matpower-validation
+      - name: Show external runtime errors
+        if: failure()
+        run: cat outputs/matpower-validation/octave_stderr.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: matpower-validation
+          path: outputs/matpower-validation
