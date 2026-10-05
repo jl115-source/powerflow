@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gridstress"
+version = "0.1.0"
+description = "Probabilistic Power-System Stress Testing: Congestion, Contingencies and Grid Uncertainty"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "pandapower==3.2.1",
+  "numpy>=2.0,<3",
+  "pandas>=2.2,<3",
+  "matplotlib>=3.9,<4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "ruff>=0.9,<1", "build>=1,<2"]
+
+[project.scripts]
+gridstress-baseline = "gridstress.baseline:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

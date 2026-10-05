@@ -1,0 +1,15 @@
+[experiment]
+name = "ieee30_baseline"
+network = "case30"
+
+[powerflow]
+tolerance_mva = 1e-8
+max_iteration = 30
+enforce_q_lims = false
+
+[diagnostics]
+near_voltage_pu = 0.005
+near_loading_percentage_points = 5.0
+near_generator_mw = 1.0
+near_generator_mvar = 1.0
+tolerance = 1e-6

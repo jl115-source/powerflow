@@ -1,0 +1,23 @@
+name: tests
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m pip install --no-deps -e .
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest
+      - run: gridstress-baseline --output outputs/ci-baseline
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ieee30-baseline
+          path: outputs/ci-baseline
