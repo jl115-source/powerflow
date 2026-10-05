@@ -9,3 +9,5 @@ dist/
 outputs/
 .ipynb_checkpoints/
 .DS_Store
+
+.cache/

@@ -1,0 +1,17 @@
+[solver]
+pf_tolerance = 1e-8
+pf_max_iteration = 30
+opf_tolerance = 1e-8
+opf_max_iteration = 150
+
+[acceptance]
+input_absolute = 1e-9
+voltage_pu = 1e-6
+angle_degree = 1e-4
+power_mw_mvar = 1e-4
+balance_mw_mvar = 1e-4
+limit_tolerance = 1e-5
+binding_percentage_points = 0.01
+relative_denominator_floor = 1e-8
+objective_absolute = 1e-4
+objective_relative = 1e-5
