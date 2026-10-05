@@ -1,4 +1,4 @@
-# Tidy result contract (schema version 1)
+# Tidy result contract (schema version 2)
 
 CSV files have no implicit row index. Physical units appear in column names. Element identity
 is `(element_type, element_id)` and bus identity is `bus_id`; names are display metadata.
@@ -17,5 +17,22 @@ Concatenating runs requires adding a run ID. The extractor does not trust positi
 
 Generation − load − shunt − branch absorption must be approximately zero for both P and Q.
 `p_network_loss_mw` includes active shunt consumption; do not subtract shunts twice.
-`is_optimal_dispatch` is false. Curtailment, redispatch, unserved energy and contingency
+`is_optimal_dispatch` distinguishes PF from successful OPF (AC optimality is local).
+`model`, `flow_limit`, `thermal_limits_enforced`, and `objective_cost_per_hour` identify
+what was solved. The objective is null for PF. OPF checks cost against an independently
+evaluated polynomial total, P/Q balance, and enforced constraint bounds.
+
+Branch tables retain current, apparent-power and active-power loading separately:
+`loading_percent`, `apparent_loading_percent`, `active_loading_percent`. All use the
+source nominal rating basis; compare each to `max_loading_percent`. `rate_a_mva` is
+sqrt(3) × nominal kV × max_i_ka × df × parallel × max_loading_percent / 100.
+For the DC model that RATE_A number is used as an MW bound, not a solved MVA flow.
+
+DC outputs leave voltage magnitudes, Q, terminal current and MVA blank/NaN; zero DC
+loss is a model assumption, not an AC loss estimate. Diagnostics omit Q and voltage
+and assess active loading. The AC-MVA solve assesses apparent loading, while current
+loading remains separately available to show the formulation difference.
+
+Thermal-relaxed outputs retain original source ratings for comparison; a source-bound
+violation in those runs is not a violation of an enforced OPF constraint. Curtailment, redispatch, unserved energy and contingency
 severity are unavailable in this milestone and are not fabricated as zeros.

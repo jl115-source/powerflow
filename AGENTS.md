@@ -11,5 +11,8 @@
 - Use source IDs as keys. Do not assume DataFrame row order equals physical bus/branch order.
 - For physics changes, test convergence, P/Q balance, sign conventions, limits and input immutability.
 - Run `pytest`, `ruff check .`, `ruff format --check .` and a fresh baseline before publishing.
-- DC PF, OPF, N-1, Monte Carlo and weather are planned; do not add them without an explicit task.
+- AC/DC PF and OPF are implemented. N-1, Monte Carlo and weather remain out of scope.
+- Preserve source/study/scenario separation. Never label DC voltages or Q as AC results.
+- Keep current, fixed-MVA and DC active-flow constraints explicit in results and comparisons.
+- Before publishing solver changes, run both baseline and congestion experiments.
 - Do not commit generated runs, virtual environments, credentials or downloaded third-party datasets.
