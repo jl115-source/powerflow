@@ -13,11 +13,22 @@ not an independent MATPOWER validation.
 5. Compare bus voltage magnitudes/angles, both terminal P/Q, generator injections and losses.
    Initial acceptance targets: 1e-6 pu, 1e-4 degrees and 1e-4 MW/MVAr, subject to review
    after parameter parity. Include P/Q balance and separate absolute/relative errors.
-6. Compare terminal MVA to MATPOWER RATE_A separately from pandapower current loading.
-   At non-unit voltage these feasibility definitions differ. Do not compare percentages
-   blindly. MATPOWER zero RATE_A means unconstrained, not zero capacity.
+6. For like-for-like AC current limits, select MATPOWER `opf.flow_lim='I'` and
+   pandapower `OPF_FLOW_LIM=2`. MATPOWER interprets RATE_A as current expressed in MVA
+   at 1 pu voltage: match RATE_A/baseMVA and both terminal current bases. The case30
+   equal nominal line-terminal voltage bases are checked by the adapter. Compare
+   both terminal currents plus constraint residuals, not just reported percentages.
+   Separately compare fixed-MVA `opf.flow_lim='S'` against `OPF_FLOW_LIM=0`.
+   DC OPF uses |P| <= RATE_A. Zero RATE_A means unconstrained, not zero capacity.
 7. For OPF, align objective and feasibility conventions; compare cost, dispatch and residuals.
    An AC OPF can have local optima; document solver/version and compare feasibility first.
 
 The result adapter is the only translation boundary for table schemas. Metrics and plots
 consume pandas tables so a future MATPOWER adapter can produce the same contract.
+
+Reference: [MATPOWER mpoption](https://matpower.org/documentation/ref-manual/legacy/functions/mpoption.html).
+In installed pandapower 3.2.1, `optimal_powerflow.py` defaults OPF_FLOW_LIM to 2;
+`pypower/opf_consfcn.py` evaluates squared terminal-current bounds for mode 2 and
+squared terminal-MVA bounds for mode 0. `build_branch.py` converts line ratings to
+RATE_A using sqrt(3) × nominal kV × allowable kA. The adapter passes modes explicitly.
+No external MATPOWER execution or cross-backend validation is claimed in this milestone.

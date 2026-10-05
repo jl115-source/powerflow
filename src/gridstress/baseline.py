@@ -62,7 +62,7 @@ def run_baseline(config_path: Path, output: Path) -> Path:
         for path in sorted(Path(__file__).parent.glob("*.py"))
     }
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "experiment": config["experiment"],
         "solver": "AC Newton-Raphson",
         "powerflow": asdict(pf_options),

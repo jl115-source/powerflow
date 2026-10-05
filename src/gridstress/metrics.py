@@ -86,15 +86,23 @@ def constraint_diagnostics(
             )
         )
 
-    for row in results.buses.loc[results.buses.in_service].itertuples():
+    dc = results.summary.iloc[0].get("model", "ac") == "dc"
+    flow_limit = results.summary.iloc[0].get("flow_limit", "current")
+    bus_rows = results.buses.loc[results.buses.in_service] if not dc else results.buses.iloc[:0]
+    for row in bus_rows.itertuples():
         for bound, limit in (("lower", row.min_vm_pu), ("upper", row.max_vm_pu)):
             add("bus", row.bus_id, "vm_pu", row.vm_pu, bound, limit, options.near_voltage_pu, "pu")
+    loading_column = {
+        "current": "loading_percent",
+        "apparent_power": "apparent_loading_percent",
+        "active_power": "active_loading_percent",
+    }[flow_limit]
     for row in results.branches.loc[results.branches.in_service].itertuples():
         add(
             row.element_type,
             row.element_id,
-            "loading_percent",
-            row.loading_percent,
+            loading_column,
+            getattr(row, loading_column),
             "upper",
             row.max_loading_percent,
             options.near_loading_percentage_points,
@@ -105,6 +113,8 @@ def constraint_diagnostics(
             ("p_mw", options.near_generator_mw, "MW"),
             ("q_mvar", options.near_generator_mvar, "MVAr"),
         ):
+            if dc and quantity == "q_mvar":
+                continue
             for bound, prefix in (("lower", "min_"), ("upper", "max_")):
                 add(
                     row.element_type,
@@ -130,3 +140,28 @@ def constraint_diagnostics(
             "status",
         ],
     )
+
+
+def compare_dispatch(reference: ResultTables, candidate: ResultTables) -> pd.DataFrame:
+    """Keyed generator redispatch (candidate minus reference), including slack.
+
+    Comparisons must use the same physical model and source identities. Total
+    absolute redispatch is not divided by two: losses can change the net sum.
+    """
+    if reference.summary.iloc[0].get("model", "ac") != candidate.summary.iloc[0].get("model", "ac"):
+        raise ValueError("Compare dispatch only within the same AC/DC model")
+    keys = ["element_type", "element_id", "bus_id"]
+    columns = keys + ["p_mw", "q_mvar"]
+    joined = reference.generators[columns].merge(
+        candidate.generators[columns],
+        on=keys,
+        how="outer",
+        validate="one_to_one",
+        suffixes=("_reference", "_candidate"),
+        indicator=True,
+    )
+    if (joined["_merge"] != "both").any():
+        raise ValueError("Generator identities differ between runs")
+    joined["delta_p_mw"] = joined.p_mw_candidate - joined.p_mw_reference
+    joined["delta_q_mvar"] = joined.q_mvar_candidate - joined.q_mvar_reference
+    return joined.drop(columns="_merge")

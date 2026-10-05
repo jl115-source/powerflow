@@ -1,0 +1,27 @@
+[experiment]
+name = "case30_redispatch"
+
+[scenario]
+name = "base_demand"
+demand_scale = 1.0
+
+[policy]
+name = "source_bounds_dispatch"
+thermal_limits = true
+
+[opf]
+max_iteration = 150
+solver_tolerance = 1e-8
+check_tolerance = 1e-5
+
+[powerflow]
+tolerance_mva = 1e-8
+max_iteration = 30
+enforce_q_lims = false
+
+[diagnostics]
+near_voltage_pu = 0.005
+near_loading_percentage_points = 5.0
+near_generator_mw = 1.0
+near_generator_mvar = 1.0
+tolerance = 1e-5

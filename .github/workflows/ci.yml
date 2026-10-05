@@ -17,7 +17,8 @@ jobs:
       - run: ruff format --check .
       - run: pytest
       - run: gridstress-baseline --output outputs/ci-baseline
+      - run: gridstress-congestion --output outputs/ci-congestion
       - uses: actions/upload-artifact@v4
         with:
-          name: ieee30-baseline
-          path: outputs/ci-baseline
+          name: ieee30-experiments
+          path: outputs/ci-*

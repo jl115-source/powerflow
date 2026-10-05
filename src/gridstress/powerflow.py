@@ -39,10 +39,11 @@ def run_ac_power_flow(
 
     Fail on nonconvergence and unsupplied in-service buses. No load shedding,
     dispatch correction, rating adjustment or fallback solver is attempted.
-    DC PF is deliberately deferred to the next milestone.
     """
     options = options or ACPowerFlowOptions()
     solved = deepcopy(net)
+    solved.OPF_converged = False
+    solved.pop("gridstress_solution", None)
     try:
         pp.runpp(
             solved,
@@ -66,4 +67,32 @@ def run_ac_power_flow(
     values = solved.res_bus.loc[solved.bus.in_service, ["vm_pu", "va_degree"]]
     if not np.isfinite(values.to_numpy()).all():
         raise PowerFlowError("In-service buses contain nonfinite results (possibly unsupplied)")
+    solved["gridstress_solution"] = {
+        "model": "ac",
+        "optimal": False,
+        "flow_limit": "current",
+        "thermal_limits": False,
+    }
+    return solved
+
+
+def run_dc_power_flow(net: pandapowerNet) -> pandapowerNet:
+    """Lossless linear DC PF; Q, voltage magnitudes and AC feasibility are unavailable."""
+    solved = deepcopy(net)
+    solved.OPF_converged = False
+    solved.pop("gridstress_solution", None)
+    try:
+        pp.rundcpp(solved, check_connectivity=True, trafo_model="t", trafo_loading="current")
+    except LoadflowNotConverged as exc:
+        raise PowerFlowError("DC power flow did not converge") from exc
+    angles = solved.res_bus.loc[solved.bus.in_service, "va_degree"]
+    if not solved.converged or not np.isfinite(angles).all():
+        raise PowerFlowError("DC power flow failed or contains unsupplied in-service buses")
+    solved["gridstress_solution"] = {
+        "model": "dc",
+        "optimal": False,
+        "flow_limit": "active_power",
+        "thermal_limits": False,
+        "numba": bool(solved["_options"]["numba"]),
+    }
     return solved

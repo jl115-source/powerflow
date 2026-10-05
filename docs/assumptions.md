@@ -31,3 +31,43 @@
 - Extraction intentionally supports only the case30 device set. Other device classes
   raise before totals are calculated. Future transformer/storage/renewable work must add
   explicit schema and accounting tests. Ratings that are NaN/inf are labeled unrated.
+
+
+## Milestone 2 study policy
+
+`load_ieee30()` is the source benchmark. `build_study_case30(OPFPolicy(...))` produces
+an independent network with all six generation sources explicitly controllable and all
+loads explicitly fixed. Numerical generator P/Q limits, voltage bounds, ratings, shunts
+and cost coefficients remain source values. Generator/slack voltage magnitudes can be
+optimized within bus bounds; their raw-PF setpoints are not fixed OPF targets. Q-limit
+constraints are part of AC OPF regardless of the PF `enforce_q_lims` diagnostic option.
+
+`apply_scenario()` scales all demand P and Q together, preserves power factor, resets
+solver state, and records name/factor. It rejects composition on an existing scenario.
+The published first experiment uses factor 1.0; no load/generation adjustments repair
+its raw baseline. Generator and network availability are not changed.
+
+The native AC formulation is selected explicitly with `OPF_FLOW_LIM=2` (current).
+A separate AC comparator uses `OPF_FLOW_LIM=0` (fixed apparent power). Both enforce
+both terminal magnitudes; reporting always distinguishes physical current from MVA.
+DC OPF uses lossless linear active-power balance and |P| <= RATE_A, with no Q or
+voltage feasibility claim. Source case30 has no reactive costs; DC rejects such costs.
+
+The paired thermal-relaxed study removes `max_loading_percent` only from the solver's
+private copy (pandapower converts its absence to RATE_A=0, meaning unconstrained), then
+restores source ratings for diagnostics. Every other policy and physical parameter is
+identical. This retains network power balance, voltages and generator bounds; it is
+not copper-plate dispatch. AC objective differences are between local solutions and
+are not a global optimality certificate. Raw-PF to OPF cost change combines several
+effects and must not be called a congestion premium.
+
+PIPS tolerances: feasibility, gradient, complementarity, objective and OPF violation
+1e-8; at most 150 iterations; AC OPF `init="flat"` uses pandapower's bound-based start
+(this differs from flat-voltage AC PF initialization). No retry/fallback is attempted.
+Post-check tolerance: 1e-5 in each physical result unit. In-service buses must have
+finite solved states; P/Q totals and all enforced table bounds are independently checked.
+A solver failure is not proof of physical infeasibility or unserved demand.
+
+Pandapower 3.2.1 DC PF auto-detects numba even when its keyword is supplied; the
+adapter records the resolved flag rather than claiming to override it. The locked
+environment omits numba, so its informational speed warning is expected.
