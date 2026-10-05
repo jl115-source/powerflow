@@ -101,7 +101,7 @@ def run_congestion(config_path: Path, output: Path) -> Path:
             max_apparent_loading_percent=result.branches.apparent_loading_percent.max(),
             max_active_loading_percent=result.branches.active_loading_percent.max(),
             min_vm_pu=result.buses.vm_pu.min(),
-            violations_against_source_bounds=int((diagnostics.status == "violated").sum()),
+            violations_under_formulation=int((diagnostics.status == "violated").sum()),
         )
         rows.append(summary)
         run_metadata[name] = {

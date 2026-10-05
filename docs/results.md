@@ -36,3 +36,9 @@ loading remains separately available to show the formulation difference.
 Thermal-relaxed outputs retain original source ratings for comparison; a source-bound
 violation in those runs is not a violation of an enforced OPF constraint. Curtailment, redispatch, unserved energy and contingency
 severity are unavailable in this milestone and are not fabricated as zeros.
+
+In the congestion comparison, `violations_under_formulation` counts violated bounds
+under the selected current, fixed-MVA, or DC active-flow formulation. It is not an
+all-conventions violation count or a count restricted to enforced constraints: PF
+and thermal-relaxed cases still report diagnostics against the retained ratings.
+For example, AC-MVA OPF can report zero while current loading exceeds 100%.
